@@ -34,7 +34,7 @@ namespace Oxide.Plugins
 
         object OnPlayerDeath(BasePlayer victim, HitInfo info)
         {
-            if (victim != null && info != null && info.InitiatorPlayer != null && !info.InitiatorPlayer.IsNpc)
+            if (victim != null && info != null && info.InitiatorPlayer != null && !victim.IsNpc && !info.InitiatorPlayer.IsNpc)
             {
                 PlayerData victimData = GetPlayerData(victim);
                 PlayerData killerData = GetPlayerData(info.InitiatorPlayer);
@@ -84,7 +84,7 @@ namespace Oxide.Plugins
 
         bool CanBeWounded(BasePlayer player, HitInfo info)
         {
-            if (player != null && info != null && info.InitiatorPlayer != null && !info.InitiatorPlayer.IsNpc)
+            if (player != null && !player.IsNpc && info != null && info.InitiatorPlayer != null && !info.InitiatorPlayer.IsNpc)
             {
                 PlayerData victimData = GetPlayerData(player);
                 PlayerData attackerData = GetPlayerData(info.InitiatorPlayer);
