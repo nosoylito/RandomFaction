@@ -16,3 +16,4 @@ __**RandomFaction**__
 - You can set in the config a bounty for opposite faction heads. In order to get paid you have to gather the body of an opp and get the skull.
 - Player can't assist medically a player from the opposite faction.
 - usar DATA o usar PERMISSIONS para designar las facciones.
+- commands to check: 1) factions K/D score 2) Top 10 K/D (colored) 3) list of faction members 4) list of opps.
