@@ -1,6 +1,8 @@
 ﻿using Oxide.Core.Configuration;
 using Oxide.Core;
 using System.Collections.Generic;
+using System.Linq;
+using ProtoBuf;
 
 namespace Oxide.Plugins
 {
@@ -118,7 +120,47 @@ namespace Oxide.Plugins
         object OnEntityTakeDamage(BaseCombatEntity entity, HitInfo info)
         {
             // IF PLAYERS ARE FROM THE SALME FACTION THEY CAN'T DAMAGE EACH OTHER'S BUILDING
-            Puts("OnEntityTakeDamage works!");
+            if (entity != null && info != null)
+            {
+                if (entity is BuildingBlock || entity is Door)
+                {
+                    if (info.InitiatorPlayer != null && !info.InitiatorPlayer.IsNpc)
+                    {
+                        if (IsBaseRaidable(entity, info))
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            info.damageTypes.ScaleAll(0);
+                            return true;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        object OnTeamInvite(BasePlayer inviter, BasePlayer target)
+        {
+            // check if player can be invited
+            Puts($"{inviter.displayName} invited {target.displayName} to his team");
+            return null;
+        }
+
+        object OnTeamUpdate(ulong currentTeam, ulong newTeam, BasePlayer player)
+        {
+            // check if all members belong to the same faction, if not disband team
+            Puts("OnTeamUpdate works!");
+            return null;
+        }
+
+        object OnCupboardAuthorize(BuildingPrivlidge privilege, BasePlayer player)
+        {
+            // check authorizing player is same faction as TC owner, if not reject auth
+            // faction 0 cannot authorize unless is the owner
+            // if owner is faction 0, NO ONE can authorize in his TC
+            Puts("OnCupboardAuthorize works!");
             return null;
         }
 
@@ -129,6 +171,26 @@ namespace Oxide.Plugins
         #endregion
 
         #region "OnPlayerDeath"
+
+        #endregion
+
+        #region "OnEntityTakeDamage"
+
+        private bool IsBaseRaidable(BaseCombatEntity entity, HitInfo info)
+        {
+            PlayerData attackerData = GetPlayerData(info.InitiatorPlayer);
+
+            foreach (PlayerNameID player in entity.GetEntityBuildingPrivilege().authorizedPlayers.ToList())
+            {
+                PlayerData playerData = GetPlayerData(BasePlayer.Find(player.userid.ToString()));
+
+                if (playerData != null && attackerData != null && attackerData.faction != playerData.faction)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         #endregion
 
@@ -233,7 +295,10 @@ namespace Oxide.Plugins
         {
             if (storedData.playerList.ContainsKey(player.userID))
             {
-                return true;
+                if (storedData.playerList[player.userID].faction != 0)
+                {
+                    return true;
+                }
             }
             return false;
         }
