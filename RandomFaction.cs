@@ -3,6 +3,8 @@ using Oxide.Core;
 using System.Collections.Generic;
 using System.Linq;
 using ProtoBuf;
+using Facepunch.Extend;
+using static BaseNpc;
 
 namespace Oxide.Plugins
 {
@@ -119,7 +121,6 @@ namespace Oxide.Plugins
 
         object OnEntityTakeDamage(BaseCombatEntity entity, HitInfo info)
         {
-            // IF PLAYERS ARE FROM THE SALME FACTION THEY CAN'T DAMAGE EACH OTHER'S BUILDING
             if (entity != null && info != null)
             {
                 if (entity is BuildingBlock || entity is Door)
@@ -166,6 +167,17 @@ namespace Oxide.Plugins
 
         #endregion
 
+        #region "Testing COMMANDS"
+
+        [ChatCommand("insert")]
+        private void InsertNewPlayer(BasePlayer player, string command, string[] args)
+        {
+            PlayerData playerData = GetPlayerData(player);
+            int fac = args[0].ToInt();
+            SetFaction(playerData, fac);
+        }
+        #endregion
+
         #region "Factions"
 
         #endregion
@@ -180,9 +192,9 @@ namespace Oxide.Plugins
         {
             PlayerData attackerData = GetPlayerData(info.InitiatorPlayer);
 
-            foreach (PlayerNameID player in entity.GetEntityBuildingPrivilege().authorizedPlayers.ToList())
+            foreach (PlayerNameID player in entity.GetBuildingPrivilege().authorizedPlayers)
             {
-                PlayerData playerData = GetPlayerData(BasePlayer.Find(player.userid.ToString()));
+                PlayerData playerData = GetPlayerData(BasePlayer.FindAwakeOrSleeping(player.userid.ToString()));
 
                 if (playerData != null && attackerData != null && attackerData.faction != playerData.faction)
                 {
@@ -251,6 +263,21 @@ namespace Oxide.Plugins
                 faction = 0;
                 kills = 0;
                 deaths = 0;
+            }
+
+            private ulong GetId()
+            {
+                return this.id;
+            }
+
+            private string GetName()
+            {
+                return this.name;
+            }
+
+            public int GetFaction()
+            {
+                return this.faction;
             }
         }
 
@@ -332,8 +359,8 @@ namespace Oxide.Plugins
 
         private PlayerData SetRandomFaction(PlayerData playerData)
         {
-            playerData.faction = Random.Range(1, 2);
-            storedData.playerList.Add(playerData.id, playerData);
+            int fact = Random.Range(1, 2);
+            storedData.playerList[playerData.id].faction = fact;
             SaveDataFile();
             return playerData;
         }
@@ -341,7 +368,7 @@ namespace Oxide.Plugins
         private PlayerData SetFaction(PlayerData playerData, int fact)
         {
             playerData.faction = fact;
-            storedData.playerList.Add(playerData.id, playerData);
+            storedData.playerList[playerData.id].faction = fact;
             SaveDataFile();
             return playerData;
         }
